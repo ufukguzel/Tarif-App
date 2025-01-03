@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { TextInput, Button, Title, Snackbar } from 'react-native-paper';
+import { View, ScrollView, StyleSheet, Platform, Dimensions } from 'react-native';
+import { TextInput, Button, Title, Snackbar, Appbar } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const YeniTarif = () => {
+const { width, height } = Dimensions.get('window');
+
+const YeniTarif = ({ navigation }) => {
   const [tarifAdi, setTarifAdi] = useState('');
   const [malzemeler, setMalzemeler] = useState('');
   const [hazirlanis, setHazirlanis] = useState('');
@@ -25,18 +27,19 @@ const YeniTarif = () => {
         tarifAdi,
         malzemeler,
         hazirlanis,
-        pisirmeSuresi,
-        kisiSayisi,
+        pisirmeSuresi: pisirmeSuresi || '0',
+        kisiSayisi: kisiSayisi || '1',
         eklemeTarihi: new Date().toISOString(),
       };
 
-      // Mevcut tarifleri al
       const mevcutTariflerJSON = await AsyncStorage.getItem('kullaniciTarifleri');
       const mevcutTarifler = mevcutTariflerJSON ? JSON.parse(mevcutTariflerJSON) : [];
-
-      // Yeni tarifi ekle
       const yeniTarifler = [...mevcutTarifler, yeniTarif];
+      
       await AsyncStorage.setItem('kullaniciTarifleri', JSON.stringify(yeniTarifler));
+
+      setSnackbarMessage('Tarif başarıyla kaydedildi!');
+      setSnackbarVisible(true);
 
       // Formu temizle
       setTarifAdi('');
@@ -45,71 +48,83 @@ const YeniTarif = () => {
       setPisirmeSuresi('');
       setKisiSayisi('');
 
-      setSnackbarMessage('Tarif başarıyla kaydedildi!');
-      setSnackbarVisible(true);
+      // 2 saniye sonra önceki sayfaya dön
+      setTimeout(() => {
+        navigation.goBack();
+      }, 2000);
+
     } catch (error) {
+      console.error('Tarif kaydedilirken hata:', error);
       setSnackbarMessage('Tarif kaydedilirken bir hata oluştu!');
       setSnackbarVisible(true);
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Title style={styles.title}>Yeni Tarif Ekle</Title>
+    <View style={styles.container}>
+      <Appbar.Header style={styles.header}>
+        <Appbar.BackAction onPress={() => navigation.goBack()} color="#fff" />
+        <Appbar.Content 
+          title="Yeni Tarif" 
+          titleStyle={styles.headerTitle}
+        />
+      </Appbar.Header>
 
-      <TextInput
-        label="Tarif Adı"
-        value={tarifAdi}
-        onChangeText={setTarifAdi}
-        mode="outlined"
-        style={styles.input}
-      />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <TextInput
+          label="Tarif Adı"
+          value={tarifAdi}
+          onChangeText={setTarifAdi}
+          mode="outlined"
+          style={styles.input}
+        />
 
-      <TextInput
-        label="Malzemeler"
-        value={malzemeler}
-        onChangeText={setMalzemeler}
-        mode="outlined"
-        multiline
-        numberOfLines={4}
-        style={styles.input}
-      />
+        <TextInput
+          label="Malzemeler"
+          value={malzemeler}
+          onChangeText={setMalzemeler}
+          mode="outlined"
+          multiline
+          numberOfLines={4}
+          style={styles.input}
+        />
 
-      <TextInput
-        label="Hazırlanış"
-        value={hazirlanis}
-        onChangeText={setHazirlanis}
-        mode="outlined"
-        multiline
-        numberOfLines={6}
-        style={styles.input}
-      />
+        <TextInput
+          label="Hazırlanış"
+          value={hazirlanis}
+          onChangeText={setHazirlanis}
+          mode="outlined"
+          multiline
+          numberOfLines={6}
+          style={styles.input}
+        />
 
-      <TextInput
-        label="Pişirme Süresi (dk)"
-        value={pisirmeSuresi}
-        onChangeText={setPisirmeSuresi}
-        mode="outlined"
-        keyboardType="numeric"
-        style={styles.input}
-      />
+        <TextInput
+          label="Pişirme Süresi (dakika)"
+          value={pisirmeSuresi}
+          onChangeText={setPisirmeSuresi}
+          mode="outlined"
+          keyboardType="numeric"
+          style={styles.input}
+        />
 
-      <TextInput
-        label="Kaç Kişilik"
-        value={kisiSayisi}
-        onChangeText={setKisiSayisi}
-        mode="outlined"
-        keyboardType="numeric"
-        style={styles.input}
-      />
+        <TextInput
+          label="Kaç Kişilik"
+          value={kisiSayisi}
+          onChangeText={setKisiSayisi}
+          mode="outlined"
+          keyboardType="numeric"
+          style={styles.input}
+        />
 
-      <Button
-        mode="contained"
-        onPress={tarifKaydet}
-        style={styles.button}
-      >
-        Tarifi Kaydet
-      </Button>
+        <Button 
+          mode="contained" 
+          onPress={tarifKaydet}
+          style={styles.button}
+        >
+          Tarifi Kaydet
+        </Button>
+      </ScrollView>
 
       <Snackbar
         visible={snackbarVisible}
@@ -122,30 +137,37 @@ const YeniTarif = () => {
       >
         {snackbarMessage}
       </Snackbar>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#FFF8E1',
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#FF6F00',
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  header: {
+    backgroundColor: '#FF6F00',
+    elevation: 4,
+    height: Platform.OS === 'ios' ? height * 0.07 : height * 0.06,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: width * 0.04,
+    fontWeight: '600',
   },
   input: {
-    marginBottom: 15,
+    marginBottom: 16,
     backgroundColor: '#fff',
   },
   button: {
-    marginTop: 10,
-    marginBottom: 20,
+    marginTop: 16,
     backgroundColor: '#FF6F00',
+    paddingVertical: 8,
   },
 });
 

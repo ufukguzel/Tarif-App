@@ -1,150 +1,251 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Title, Text, Surface } from 'react-native-paper';
-import { createStackNavigator } from '@react-navigation/stack';
+import { View, StyleSheet, Platform, Dimensions } from 'react-native';
+import { Appbar, Text, Avatar, List, Button, TextInput, Portal, Dialog } from 'react-native-paper';
 
-const Stack = createStackNavigator();
+const { width, height } = Dimensions.get('window');
 
-const GirisEkrani = ({ navigation }) => {
+const Kullanici = ({ navigation }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [email, setEmail] = useState('');
-  const [sifre, setSifre] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
 
-  const girisYap = () => {
+  const handleLogin = () => {
     // Giriş işlemleri burada yapılacak
-    console.log('Giriş yapılıyor:', email);
+    setIsLoggedIn(true);
+    setShowLoginDialog(false);
+    setEmail('');
+    setPassword('');
   };
 
-  return (
-    <Surface style={styles.surface}>
-      <Title style={styles.title}>Giriş Yap</Title>
-      
-      <TextInput
-        label="E-posta"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        style={styles.input}
-        keyboardType="email-address"
-      />
-
-      <TextInput
-        label="Şifre"
-        value={sifre}
-        onChangeText={setSifre}
-        mode="outlined"
-        style={styles.input}
-        secureTextEntry
-      />
-
-      <Button
-        mode="contained"
-        onPress={girisYap}
-        style={styles.button}
-      >
-        Giriş Yap
-      </Button>
-
-      <Button
-        mode="text"
-        onPress={() => navigation.navigate('KayitOl')}
-        style={styles.linkButton}
-      >
-        Hesabınız yok mu? Kayıt olun
-      </Button>
-    </Surface>
-  );
-};
-
-const KayitEkrani = ({ navigation }) => {
-  const [ad, setAd] = useState('');
-  const [email, setEmail] = useState('');
-  const [sifre, setSifre] = useState('');
-
-  const kayitOl = () => {
+  const handleRegister = () => {
     // Kayıt işlemleri burada yapılacak
-    console.log('Kayıt yapılıyor:', email);
+    setIsLoggedIn(true);
+    setShowRegisterDialog(false);
+    setEmail('');
+    setPassword('');
+    setName('');
   };
 
-  return (
-    <Surface style={styles.surface}>
-      <Title style={styles.title}>Kayıt Ol</Title>
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
 
-      <TextInput
-        label="Ad Soyad"
-        value={ad}
-        onChangeText={setAd}
-        mode="outlined"
-        style={styles.input}
-      />
-
-      <TextInput
-        label="E-posta"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        style={styles.input}
-        keyboardType="email-address"
-      />
-
-      <TextInput
-        label="Şifre"
-        value={sifre}
-        onChangeText={setSifre}
-        mode="outlined"
-        style={styles.input}
-        secureTextEntry
-      />
-
-      <Button
-        mode="contained"
-        onPress={kayitOl}
-        style={styles.button}
-      >
-        Kayıt Ol
-      </Button>
-
-      <Button
-        mode="text"
-        onPress={() => navigation.navigate('GirisYap')}
-        style={styles.linkButton}
-      >
-        Zaten hesabınız var mı? Giriş yapın
-      </Button>
-    </Surface>
+  const LoginDialog = () => (
+    <Portal>
+      <Dialog visible={showLoginDialog} onDismiss={() => setShowLoginDialog(false)}>
+        <Dialog.Title>Giriş Yap</Dialog.Title>
+        <Dialog.Content>
+          <TextInput
+            label="E-posta"
+            value={email}
+            onChangeText={setEmail}
+            mode="outlined"
+            style={styles.input}
+          />
+          <TextInput
+            label="Şifre"
+            value={password}
+            onChangeText={setPassword}
+            mode="outlined"
+            style={styles.input}
+            secureTextEntry
+          />
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setShowLoginDialog(false)}>İptal</Button>
+          <Button onPress={handleLogin}>Giriş Yap</Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
   );
-};
 
-const Kullanici = () => {
+  const RegisterDialog = () => (
+    <Portal>
+      <Dialog visible={showRegisterDialog} onDismiss={() => setShowRegisterDialog(false)}>
+        <Dialog.Title>Kayıt Ol</Dialog.Title>
+        <Dialog.Content>
+          <TextInput
+            label="Ad Soyad"
+            value={name}
+            onChangeText={setName}
+            mode="outlined"
+            style={styles.input}
+          />
+          <TextInput
+            label="E-posta"
+            value={email}
+            onChangeText={setEmail}
+            mode="outlined"
+            style={styles.input}
+          />
+          <TextInput
+            label="Şifre"
+            value={password}
+            onChangeText={setPassword}
+            mode="outlined"
+            style={styles.input}
+            secureTextEntry
+          />
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setShowRegisterDialog(false)}>İptal</Button>
+          <Button onPress={handleRegister}>Kayıt Ol</Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
+  );
+
+  const SettingsDialog = () => (
+    <Portal>
+      <Dialog visible={showSettingsDialog} onDismiss={() => setShowSettingsDialog(false)}>
+        <Dialog.Title>Ayarlar</Dialog.Title>
+        <Dialog.Content>
+          <List.Item
+            title="Bildirimler"
+            description="Bildirim ayarlarını düzenle"
+            left={props => <List.Icon {...props} icon="bell-outline" />}
+          />
+          <List.Item
+            title="Tema"
+            description="Uygulama temasını değiştir"
+            left={props => <List.Icon {...props} icon="palette-outline" />}
+          />
+          <List.Item
+            title="Dil"
+            description="Uygulama dilini değiştir"
+            left={props => <List.Icon {...props} icon="translate" />}
+          />
+          <List.Item
+            title="Hesap Ayarları"
+            description="Hesap bilgilerini düzenle"
+            left={props => <List.Icon {...props} icon="account-cog-outline" />}
+          />
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setShowSettingsDialog(false)}>Kapat</Button>
+        </Dialog.Actions>
+      </Dialog>
+    </Portal>
+  );
+
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="GirisYap" component={GirisEkrani} options={{ headerShown: false }} />
-      <Stack.Screen name="KayitOl" component={KayitEkrani} options={{ headerShown: false }} />
-    </Stack.Navigator>
+    <View style={styles.container}>
+      <Appbar.Header style={styles.header}>
+        <Appbar.Content 
+          title="Profil" 
+          titleStyle={styles.headerTitle}
+        />
+      </Appbar.Header>
+
+      {isLoggedIn ? (
+        <>
+          <View style={styles.profileSection}>
+            <Avatar.Icon 
+              size={80} 
+              icon="account"
+              style={styles.avatar}
+              color="#fff"
+            />
+            <Text style={styles.userName}>{name || 'Kullanıcı Adı'}</Text>
+          </View>
+
+          <List.Section>
+            <List.Item
+              title="Tariflerim"
+              left={props => <List.Icon {...props} icon="book-outline" />}
+              onPress={() => navigation.navigate('Tariflerim')}
+            />
+            <List.Item
+              title="Favorilerim"
+              left={props => <List.Icon {...props} icon="heart-outline" />}
+              onPress={() => navigation.navigate('Favoriler')}
+            />
+            <List.Item
+              title="Ayarlar"
+              left={props => <List.Icon {...props} icon="cog-outline" />}
+              onPress={() => setShowSettingsDialog(true)}
+            />
+            <List.Item
+              title="Çıkış Yap"
+              left={props => <List.Icon {...props} icon="logout" />}
+              onPress={handleLogout}
+            />
+          </List.Section>
+        </>
+      ) : (
+        <View style={styles.authContainer}>
+          <Button 
+            mode="contained" 
+            style={styles.authButton}
+            onPress={() => setShowLoginDialog(true)}
+          >
+            Giriş Yap
+          </Button>
+          <Button 
+            mode="outlined" 
+            style={styles.authButton}
+            onPress={() => setShowRegisterDialog(true)}
+          >
+            Kayıt Ol
+          </Button>
+        </View>
+      )}
+
+      <LoginDialog />
+      <RegisterDialog />
+      <SettingsDialog />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  surface: {
+  container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#FFF8E1',
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#FF6F00',
+  header: {
+    backgroundColor: '#FF6F00',
+    elevation: 4,
+    height: Platform.OS === 'ios' ? height * 0.07 : height * 0.06,
+    justifyContent: 'center',
   },
-  input: {
-    marginBottom: 15,
+  headerTitle: {
+    color: '#fff',
+    fontSize: width * 0.04,
+    fontWeight: '600',
+  },
+  profileSection: {
+    alignItems: 'center',
+    padding: 20,
     backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  button: {
-    marginTop: 10,
+  avatar: {
+    backgroundColor: '#FF6F00',
+    marginBottom: 10,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+  },
+  authContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  authButton: {
+    marginVertical: 10,
     backgroundColor: '#FF6F00',
   },
-  linkButton: {
-    marginTop: 20,
+  input: {
+    marginBottom: 10,
+    backgroundColor: '#fff',
   },
 });
 

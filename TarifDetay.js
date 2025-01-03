@@ -1,55 +1,78 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { Card, Title, Paragraph, List } from 'react-native-paper';
 
-const TarifDetay = ({ route, navigation }) => {
-  const { recipe } = route.params; // Ana ekrandan gelen tarif bilgisi
+const { width } = Dimensions.get('window');
+
+const TarifDetay = ({ route }) => {
+  const { recipe } = route.params;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{recipe.name || "Tarif Adı Bulunamadı"}</Text> {/* Tarifin Adı */}
-      <Text style={styles.details}>Malzemeler: {recipe.ingredients || "Malzemeler belirtilmemiş."}</Text> {/* Malzemeler */}
-      <Text style={styles.details}>Hazırlanış: {recipe.details || "Hazırlanış belirtilmemiş."}</Text> {/* Tarifin Detayları */}
+    <ScrollView style={styles.container}>
+      <Card style={styles.card}>
+        <Card.Cover source={{ uri: recipe.image }} style={styles.image} />
+        <Card.Content>
+          <Title style={styles.title}>{recipe.name}</Title>
+          <Paragraph style={styles.details}>
+            {recipe.duration} • {recipe.difficulty} • {recipe.serving}
+          </Paragraph>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
-        <Text style={styles.buttonText}>Geri Dön</Text>
-      </TouchableOpacity>
-    </View>
+          <Title style={styles.sectionTitle}>Malzemeler</Title>
+          {recipe.ingredients?.map((ingredient, index) => (
+            <List.Item
+              key={index}
+              title={ingredient}
+              left={props => <List.Icon {...props} icon="circle-small" />}
+            />
+          ))}
+
+          <Title style={styles.sectionTitle}>Hazırlanışı</Title>
+          {recipe.instructions?.map((instruction, index) => (
+            <Paragraph key={index} style={styles.instruction}>
+              {instruction}
+            </Paragraph>
+          ))}
+        </Card.Content>
+      </Card>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#FFF8E1', // Uygulamanın genel arka plan rengiyle uyumlu
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+  },
+  card: {
+    borderRadius: 12,
+    elevation: 4,
+  },
+  image: {
+    height: width * 0.6,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#FF6F00', // Turuncu renk
+    fontSize: width * 0.06,
+    marginTop: 16,
+    color: '#333',
   },
   details: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#333', // Detaylar için koyu renk
+    fontSize: width * 0.035,
+    color: '#666',
+    marginBottom: 16,
   },
-  button: {
-    backgroundColor: '#FF6F00', // Turuncu buton rengi
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 8,
-    alignItems: 'center',
-    elevation: 5,
+  sectionTitle: {
+    fontSize: width * 0.045,
+    marginTop: 24,
+    marginBottom: 8,
+    color: '#FF6F00',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  instruction: {
+    fontSize: width * 0.035,
+    lineHeight: 24,
+    marginBottom: 8,
   },
 });
 
